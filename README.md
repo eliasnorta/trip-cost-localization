@@ -14,9 +14,9 @@ git clone https://github.com/eliasnorta/trip-cost-localization/tree/master
 cd trip-cost-localization
 ```
 
-### 2. Create Database and tables
+### 2. Create Database and insert translations
 
-Execute the `schema.sql` script to create the database
+Execute the `schema.sql` script to create the database and to insert translations.
 
 ### 3. Set up db connection
 
