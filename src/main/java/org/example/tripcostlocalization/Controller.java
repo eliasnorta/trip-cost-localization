@@ -8,15 +8,24 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.Currency;
 import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import java.util.Set;
 
 public class Controller {
-    private static final String BUNDLE_BASE_NAME = "messages_messages";
+    private static final Set<String> REQUIRED_KEYS = Set.of(
+            "distance.label",
+            "consumption.label",
+            "price.label",
+            "language.label",
+            "calculate.button",
+            "distance.prompt",
+            "consumption.prompt",
+            "price.prompt"
+    );
 
     @FXML
     private Label lblDistance;
@@ -49,11 +58,12 @@ public class Controller {
     private VBox root;
 
     private Locale currentLocale = Locale.US;
-    private ResourceBundle bundle;
+    private final CalculationService calculationService = new CalculationService();
+    private final LocalizationService localizationService = new LocalizationService();
 
     @FXML
     public void initialize() {
-        applyLanguage(Locale.US);
+        setLanguage(currentLocale);
     }
 
     @FXML
@@ -78,8 +88,22 @@ public class Controller {
                     localizedCost
             );
             lblResult.setText(resultMessage);
+
+            CalculationRecord record = new CalculationRecord(
+                    BigDecimal.valueOf(distance),
+                    BigDecimal.valueOf(consumption),
+                    BigDecimal.valueOf(price),
+                    BigDecimal.valueOf(totalFuel),
+                    BigDecimal.valueOf(totalCost),
+                    currentLocale.toLanguageTag()
+            );
+            calculationService.saveCalculation(record);
+
+
         } catch (NumberFormatException ex) {
             lblResult.setText(text("invalid.input"));
+        } catch (RuntimeException ex) {
+            lblResult.setText(text("database.error"));
         }
     }
 
@@ -92,12 +116,13 @@ public class Controller {
             case "IR" -> Locale.of("fa", "IR");
             default -> Locale.US;
         };
-        applyLanguage(locale);
+        setLanguage(locale);
     }
 
-    private void applyLanguage(Locale locale) {
+    private void setLanguage(Locale locale) {
         try {
-            bundle = ResourceBundle.getBundle(BUNDLE_BASE_NAME, locale);
+            localizationService.loadStrings(locale.toString());
+            validateRequiredKeys();
             currentLocale = locale;
             applyLocalizedText();
 
@@ -106,8 +131,10 @@ public class Controller {
             } else {
                 root.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
             }
-        } catch (MissingResourceException ex) {
-            lblResult.setText("Missing language resources");
+        } catch (IllegalStateException ex) {
+            lblResult.setText(ex.toString());
+        } catch (RuntimeException ex) {
+            lblResult.setText(ex.toString());
         }
     }
 
@@ -125,10 +152,21 @@ public class Controller {
     }
 
     private String text(String key) {
-        if (bundle != null && bundle.containsKey(key)) {
-            return bundle.getString(key);
+        String value = localizationService.getString(key);
+        if (!value.equals(key)) {
+            return value;
+        } else {
+            throw new IllegalStateException();
         }
-        return key;
+    }
+
+    private void validateRequiredKeys() {
+        Set<String> availableKeys = localizationService.getAllKeys();
+        for (String key : REQUIRED_KEYS) {
+            if (!availableKeys.contains(key)) {
+                throw new IllegalStateException();
+            }
+        }
     }
 
     private String formatCurrency(double amount) {
