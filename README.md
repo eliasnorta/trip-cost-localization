@@ -10,7 +10,7 @@
 ### 1. Clone the Repository
 
 ```zsh
-git clone <repository-url>
+git clone https://github.com/eliasnorta/trip-cost-localization/tree/master
 cd trip-cost-localization
 ```
 
