@@ -16,7 +16,7 @@ cd trip-cost-localization
 
 ### 2. Create Database and tables
 
-Execute the `schema.sql` script to create the database and user
+Execute the `schema.sql` script to create the database
 
 ### 3. Set up db connection
 
