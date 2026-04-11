@@ -58,8 +58,21 @@ public class Controller {
     private VBox root;
 
     private Locale currentLocale = Locale.US;
-    private final CalculationService calculationService = new CalculationService();
-    private final LocalizationService localizationService = new LocalizationService();
+    private final CalculationService calculationService;
+    private final LocalizationService localizationService;
+
+    public Controller() {
+        this(new CalculationService(), new LocalizationService());
+    }
+
+    Controller(LocalizationService localizationService) {
+        this(new CalculationService(), localizationService);
+    }
+
+    Controller(CalculationService calculationService, LocalizationService localizationService) {
+        this.calculationService = calculationService;
+        this.localizationService = localizationService;
+    }
 
     @FXML
     public void initialize() {
@@ -119,7 +132,7 @@ public class Controller {
         setLanguage(locale);
     }
 
-    private void setLanguage(Locale locale) {
+    public void setLanguage(Locale locale) {
         try {
             localizationService.loadStrings(locale.toString());
             validateRequiredKeys();
@@ -169,7 +182,7 @@ public class Controller {
         }
     }
 
-    private String formatCurrency(double amount) {
+    public String formatCurrency(double amount) {
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(currentLocale);
 
         Currency currency = switch (currentLocale.getLanguage()) {
@@ -193,5 +206,9 @@ public class Controller {
             throw new NumberFormatException();
         }
         return parsed;
+    }
+
+    public Locale getLanguage() {
+        return currentLocale;
     }
 }

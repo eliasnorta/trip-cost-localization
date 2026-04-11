@@ -25,7 +25,7 @@ public class LocalizationService {
 
     public Map<String, String> loadStrings(String language) {
         currentLanguage = language;
-        currentStrings = cacheByLanguage.computeIfAbsent(language, this::fetchStringsFromDb);
+        currentStrings = cacheByLanguage.computeIfAbsent(language, this::fetchStrings);
         return currentStrings;
     }
 
@@ -49,9 +49,13 @@ public class LocalizationService {
         return currentStrings.keySet();
     }
 
+    protected Map<String, String> fetchStrings(String language) {
+        return fetchStringsFromDb(language);
+    }
+
     private Map<String, String> fetchStringsFromDb(String language) {
         Map<String, String> values = new LinkedHashMap<>();
-        try (Connection connection = DatabaseConnection.getConnection();
+        try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(SELECT_STRINGS_SQL)) {
             statement.setString(1, language);
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -63,5 +67,9 @@ public class LocalizationService {
             throw new RuntimeException("Unable to load localization strings for language: " + language, ex);
         }
         return Collections.unmodifiableMap(values);
+    }
+
+    protected Connection getConnection() throws SQLException {
+        return DatabaseConnection.getConnection();
     }
 }
