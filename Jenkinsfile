@@ -61,7 +61,7 @@ pipeline {
                             def scannerHome = tool 'SonarScanner'
 
                             sh "${scannerHome}/bin/sonar-scanner " +
-                                "-Dsonar.projectKey=devops-demo " +
+                                "-Dsonar.projectKey=trip-cost-calculator " +
                                 "-Dsonar.sources=src/main/java " +
                                 "-Dsonar.tests=src/test/java " +
                                 "-Dsonar.test.inclusions=**/*Test.java " +
