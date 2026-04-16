@@ -11,6 +11,8 @@ pipeline {
         DOCKERHUB_REPO = 'eliasnorta/trip-cost-localization'
         DOCKER_IMAGE_TAG = 'latest'
         DOCKER_CLI = '/usr/local/bin/docker'
+        SONARQUBE_SERVER = 'SonarQubeServer'
+        SONAR_TOKEN = 'sqp_207fe840f5c05978064bd9e1363dc7302a2c77f0'
     }
 
     stages {
@@ -49,6 +51,22 @@ pipeline {
             steps {
                 jacoco()
             }
+        }
+
+        stage('SonarQube Analysis') {
+             steps {
+                 withSonarQubeEnv('SonarQubeServer') {
+                     bat """
+                     ${tool 'SonarScanner'}\\bin\\sonar-scanner ^
+                     -Dsonar.projectKey=devops-demo ^
+                     -Dsonar.sources=src ^
+                     -Dsonar.projectName=DevOps-Demo ^
+                     -Dsonar.host.url=http://localhost:9000 ^
+                     -Dsonar.login=${env.SONAR_TOKEN} ^
+                     -Dsonar.java.binaries=target/classes
+                     """
+                 }
+             }
         }
 
         stage('Build Docker Image') {
