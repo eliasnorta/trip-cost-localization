@@ -56,15 +56,18 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'SonarQubeSecret', variable: 'SONAR_TOKEN')]) {
                     withSonarQubeEnv('SonarQubeServer') {
-                        sh '''
-                        ${tool 'SonarScanner'}/bin/sonar-scanner
-                          -Dsonar.projectKey=devops-demo
-                          -Dsonar.sources=src/main/java
-                          -Dsonar.tests=src/test/java
-                          -Dsonar.test.inclusions=**/*Test.java
-                          -Dsonar.login=$SONAR_TOKEN
-                          -Dsonar.java.binaries=target/classes
-                        '''
+
+                        script {
+                            def scannerHome = tool 'SonarScanner'
+
+                            sh "${scannerHome}/bin/sonar-scanner " +
+                                "-Dsonar.projectKey=devops-demo " +
+                                "-Dsonar.sources=src/main/java " +
+                                "-Dsonar.tests=src/test/java " +
+                                "-Dsonar.test.inclusions=**/*Test.java " +
+                                "-Dsonar.login=$SONAR_TOKEN " +
+                                "-Dsonar.java.binaries=target/classes"
+                        }
                     }
                 }
             }
